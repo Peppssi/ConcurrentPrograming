@@ -1,0 +1,46 @@
+{
+	"folders": [
+		{
+			"path": "cs",
+			"name": "CS"
+		},
+		{
+			"path": "clock",
+			"name": "1. Alarm Clock"
+		},
+                {
+                        "path": "widgets",
+                        "name": "2. Widgets from Outer Space"
+                },
+                {
+                        "path": "lift",
+                        "name": "3. Passenger Lift"
+                },
+                {
+                        "path": "crack",
+                        "name": "4. Cracking the Code"
+                },
+                {
+                        "path": "wash",
+                        "name": "5. Washing Machine"
+                },
+                {
+                        "path": "twits",
+                        "name": "6. Jim Hacker & the Twits"
+                },
+	],
+	"settings": {
+		"editor.insertSpaces": true,
+		"java.project.referencedLibraries": [
+			"../cs/labs.jar",
+			"../cs/junit/junit-platform-console-standalone-1.9.2.jar"
+                ],
+		"files.exclude": {
+			"archive": true,
+			"bin": true,
+			".project": true,
+			".settings": true,
+			".classpath": true
+		}
+	}
+}

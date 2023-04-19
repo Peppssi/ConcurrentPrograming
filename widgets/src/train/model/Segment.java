@@ -8,10 +8,10 @@ package train.model;
 public interface Segment {
     
     /**
-     * Marks this segment as occupied by the current thread (train).
-     * The segment must not be occupied already.
+     * Marks this segment as occupied by the current thread (train). The segment must not be occupied already.
+     * This method also makes a delay, to reflect the motion of the train.
      */
-    void enter();
+    void enter() throws InterruptedException;
 
     /**
      * Mark this segment as free. This is only allowed if the segment 

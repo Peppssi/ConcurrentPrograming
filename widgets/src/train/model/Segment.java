@@ -14,8 +14,8 @@ public interface Segment {
     void enter() throws InterruptedException;
 
     /**
-     * Mark this segment as free. This is only allowed if the segment 
-     * is currently occupied by the current thread (train). 
+     * Mark this segment as free. The segment must not be occupied by another thread (train).
+     * (Exiting an already free segment is permitted, however.)
      */
     void exit();
 }

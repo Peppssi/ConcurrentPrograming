@@ -9,7 +9,7 @@ public interface Segment {
     
     /**
      * Marks this segment as occupied by the current thread (train). The segment must not be occupied already.
-     * This method also makes a delay, to reflect the motion of the train.
+     * This method also makes an initial delay, before marking the segment, to reflect the motion of the train.
      */
     void enter() throws InterruptedException;
 

@@ -58,7 +58,6 @@ public class ClockMain {
         out.displayTime(15, 2, 37); // arbitrary time: just an example
 
         while (true) {
-            //mutex.acquire();
             UserInput userInput = in.getUserInput();
             Choice c = userInput.choice();
             int h = userInput.hours();

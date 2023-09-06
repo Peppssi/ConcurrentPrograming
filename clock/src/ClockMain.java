@@ -22,26 +22,37 @@ class Monitor {
 
     private long startTime = System.currentTimeMillis();
 
+    private int i = 0;
+    private boolean alarming = false;
+
     public void clockTicking(ClockOutput out) throws InterruptedException {
 
         while (true) {
             out.displayTime(timeHour, timeMin, timeSec);
 
             if (timeHour == alarmHour && timeMin == alarmMin && timeSec == alarmSec && indState) {
-                out.alarm();
+                alarming = true;
             }
 
-            long currentTime = System.currentTimeMillis();
-            long elapsedTime = currentTime - startTime;
-            long nextExecutionTime = (timeSec + timeMin * 60 + timeHour * 60 * 60 + 1) * 1000;
-            long sleepTime = nextExecutionTime - elapsedTime;
+            if (alarming) {
+                out.alarm();
+                i++;
+                if (i == 20 || !indState) {
+                    alarming = false;
+                }
+            }
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            long sleepTime = 1000 - elapsedTime;
+
             if (sleepTime > 0) {
                 Thread.sleep(sleepTime);
             }
 
+            startTime = System.currentTimeMillis();
+
             mutex.acquire();
             timeSec++;
-            mutex.release();
 
             if (timeSec == 60) {
                 timeSec = 0;
@@ -54,6 +65,7 @@ class Monitor {
                     timeHour = 0;
                 }
             }
+            mutex.release();
         }
     }
 
@@ -68,6 +80,7 @@ class Monitor {
     }
 
     public void setAlarm(int hour, int min, int sec) throws InterruptedException {
+
         mutex.acquire();
         alarmHour = hour;
         alarmMin = min;

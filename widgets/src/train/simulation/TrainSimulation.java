@@ -9,22 +9,28 @@ import train.view.TrainView;
 
 class Monitor {
 
-    Set<Segment> hashSet = new HashSet<Segment>();
+    Set<Segment> segBusy = new HashSet<Segment>();
 
-    public synchronized void addBusySeg(Segment s) throws InterruptedException {
-        hashSet.add(s);
+    public synchronized void enterSeg(Segment s) throws InterruptedException {
+        while (segBusy.contains(s)) {
+            wait();
+        }
+        segBusy.add(s);
     }
 
-    public synchronized void removeBusySeg(Segment s) throws InterruptedException {
-        hashSet.remove(s);
+    public synchronized void exitSeg(Segment s){
+        segBusy.remove(s);
         notifyAll();
     }
 
-    public synchronized boolean isBusy(Segment s) throws InterruptedException {
-        if (hashSet.contains(s)) {
-            return true;
-        } else
-            return false;
+    public void takeStep(Segment s) throws InterruptedException {
+        enterSeg(s);
+        s.enter();
+    }
+
+    public void removeStep(Segment s) throws InterruptedException {
+        s.exit();
+        exitSeg(s);
     }
 
 }
@@ -55,16 +61,11 @@ class Train extends Thread {
 
             while (true) {
                 Segment temp = route.next();
-                while(mon.isBusy(temp)){
-                    wait();
-                }
-                mon.addBusySeg(temp);
+                mon.takeStep(temp);
                 q.add(temp);
-                q.get(q.size() - 1).enter();
 
                 Segment temp2 = q.remove(0);
-                temp2.exit();
-                mon.removeBusySeg(temp2);
+                mon.removeStep(temp2);
             }
         } catch (InterruptedException e) {
             System.out.println("FEL");
@@ -77,11 +78,13 @@ public class TrainSimulation {
 
     public static void main(String[] args) throws InterruptedException {
 
+        int nbr_of_trains = 20;
+
         TrainView view = new TrainView();
 
         Monitor mon = new Monitor();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < nbr_of_trains; i++) {
             Train t = new Train(view.loadRoute(), mon);
             t.start();
         }

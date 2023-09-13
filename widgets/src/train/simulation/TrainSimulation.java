@@ -1,5 +1,4 @@
 package train.simulation;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,7 +8,7 @@ import train.view.TrainView;
 
 class Monitor {
 
-    Set<Segment> segBusy = new HashSet<Segment>();
+    private Set<Segment> segBusy = new HashSet<Segment>();
 
     private synchronized void enterSeg(Segment s) throws InterruptedException {
         while (segBusy.contains(s)) {
@@ -63,8 +62,7 @@ class Train extends Thread {
                 Segment temp = route.next();
                 mon.takeStep(temp);
                 q.add(temp);
-                Segment temp2 = q.remove(0);
-                mon.removeStep(temp2);
+                mon.removeStep(q.remove(0));
             }
         } catch (InterruptedException e) {
             System.out.println("FEL");

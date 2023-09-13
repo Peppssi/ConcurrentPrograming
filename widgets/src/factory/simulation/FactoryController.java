@@ -1,16 +1,14 @@
 package factory.simulation;
 
-import java.util.concurrent.Semaphore;
 import factory.model.Conveyor;
 import factory.model.Tool;
 import factory.model.Widget;
 
 class Monitor {
 
-    Tool press, paint;
-    boolean pressing, painting, convOff;
-    Conveyor conveyor;
-    Semaphore mutex, mutex2;
+    private Tool press, paint;
+    private boolean pressing, painting;
+    private Conveyor conveyor;
 
     public Monitor(Tool press, Tool paint, Conveyor conveyor) {
         this.press = press;
@@ -18,18 +16,13 @@ class Monitor {
         this.conveyor = conveyor;
         pressing = false;
         painting = false;
-        convOff = false;
-        mutex = new Semaphore(-1);
-        mutex2 = new Semaphore(1);
     }
 
     public void runPress() throws InterruptedException {
         while (true) {
             press.waitFor(Widget.GREEN_BLOB);
             conveyor.off();
-            press.performAction();
-            mutex.release();
-            trySetConvOn();
+            press();
         }
     }
 
@@ -37,22 +30,32 @@ class Monitor {
         while (true) {
             paint.waitFor(Widget.BLUE_MARBLE);
             conveyor.off();
-            paint.performAction();
-            mutex.release();
-            trySetConvOn();
+            paint();
         }
     }
 
-    private void trySetConvOn() throws InterruptedException {
-        mutex2.acquire();
-        if (convOff) {
-            mutex.acquire();
-            conveyor.on();
-            convOff = false;
+    private void paint() throws InterruptedException {
+        painting = true;
+        paint.performAction();
+        painting = false;
+        notifyAll();
+        while (pressing) {
+            wait();
         }
-        mutex2.release();
+        conveyor.on();
+
     }
 
+    private void press() throws InterruptedException {
+        pressing = true;
+        press.performAction();
+        pressing = false;
+        notifyAll();
+        while (painting) {
+            wait();
+        }
+        conveyor.on();
+    }
 }
 
 public class FactoryController {

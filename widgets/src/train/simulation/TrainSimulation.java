@@ -11,14 +11,14 @@ class Monitor {
 
     Set<Segment> segBusy = new HashSet<Segment>();
 
-    public synchronized void enterSeg(Segment s) throws InterruptedException {
+    private synchronized void enterSeg(Segment s) throws InterruptedException {
         while (segBusy.contains(s)) {
             wait();
         }
         segBusy.add(s);
     }
 
-    public synchronized void exitSeg(Segment s){
+    private synchronized void exitSeg(Segment s){
         segBusy.remove(s);
         notifyAll();
     }
@@ -63,7 +63,6 @@ class Train extends Thread {
                 Segment temp = route.next();
                 mon.takeStep(temp);
                 q.add(temp);
-
                 Segment temp2 = q.remove(0);
                 mon.removeStep(temp2);
             }
@@ -88,7 +87,5 @@ public class TrainSimulation {
             Train t = new Train(view.loadRoute(), mon);
             t.start();
         }
-
     }
-
 }

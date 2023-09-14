@@ -1,6 +1,5 @@
 package factory.simulation;
 import java.util.concurrent.Semaphore;
-
 import factory.model.Conveyor;
 import factory.model.Tool;
 import factory.model.Widget;
@@ -8,46 +7,46 @@ import factory.model.Widget;
 class Monitor {
 
     private Tool press, paint;
-    private boolean isPressing, isPainting;
     private Conveyor conveyor;
+    private Semaphore sem;
 
     public Monitor(Tool press, Tool paint, Conveyor conveyor) {
         this.press = press;
         this.paint = paint;
         this.conveyor = conveyor;
-        isPressing = false;
-        isPainting = false;
+        sem = new Semaphore(0);
     }
 
     public void runPress() throws InterruptedException {
         while (true) {
-            conveyor.on();
             press.waitFor(Widget.GREEN_BLOB);
-            conveyor.off();
-            isPressing = true;
+            stopConveyor();
             press.performAction();
-            isPressing = false;
-            waitFor();
+            startConveyor();
         }
     }
 
     public void runPaint() throws InterruptedException {
         while (true) {
-            conveyor.on();
             paint.waitFor(Widget.BLUE_MARBLE);
-            conveyor.off();
-            isPainting = true;
+            stopConveyor();
             paint.performAction();
-            isPainting = false;
-            waitFor();
+            startConveyor();
         }
     }
 
-    private synchronized void waitFor() throws InterruptedException{
+    private synchronized void stopConveyor() {
+        sem.release();
+        conveyor.off();
+    }
+
+    private synchronized void startConveyor() throws InterruptedException {
+        sem.acquire();
         notifyAll();
-        while(isPainting || isPressing){
-                wait();
+        while (sem.availablePermits() > 0) {
+            wait();
         }
+        conveyor.on();
     }
 }
 

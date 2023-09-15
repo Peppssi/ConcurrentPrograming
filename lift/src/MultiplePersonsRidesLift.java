@@ -1,8 +1,5 @@
 
 import java.util.ArrayList;
-
-import javax.print.event.PrintEvent;
-
 import lift.LiftView;
 import lift.Passenger;
 

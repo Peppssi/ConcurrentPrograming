@@ -75,7 +75,7 @@ public class TrainSimulation {
 
     public static void main(String[] args) throws InterruptedException {
 
-        int nbr_of_trains = 20;
+        int nbr_of_trains = 1;
 
         TrainView view = new TrainView();
 

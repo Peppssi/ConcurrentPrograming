@@ -6,6 +6,7 @@ import lift.Passenger;
 class Monitor {
     private int[] toEnter; // number of passengers waiting to enter the lift at each floor
     private int[] toExit; // number of passengers (in lift) waiting to exit at each floor
+    private int currentlyMoving;
     private int nbrOfFloors, maxPassengers, currentFloor, passengersInLift;
     private boolean goingUp;
     private boolean doorsClosed;
@@ -16,6 +17,7 @@ class Monitor {
         this.maxPassengers = maxPassengers;
         currentFloor = 0;
         passengersInLift = 0;
+        currentlyMoving = 0;
         goingUp = true;
         doorsClosed = true;
         lift = view;
@@ -23,53 +25,58 @@ class Monitor {
         toExit = new int[nbrOfFloors];
     }
 
-    public void addToArrays(int floorNbrEnter, int floorNbrExit) {
+    public synchronized void addToEnter(int floorNbrEnter) {
         toEnter[floorNbrEnter]++;
+        notifyAll();
     }
 
-    public void move() {
+    private synchronized boolean isEmpty(int[] array) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized boolean checkArrays() {
+        return (isEmpty(toEnter) && isEmpty(toExit));
+    }
+
+    public synchronized boolean checkRemainingFloors() {
         if (goingUp) {
-            lift.moveLift(currentFloor, currentFloor + 1);
-            currentFloor++;
+            for (int i = currentFloor; i < nbrOfFloors; i++) {
+                if (toEnter[i] != 0 || toExit[i] != 0) {
+                    notifyAll();
+                    return false;
+                }
+            }
         } else {
-            lift.moveLift(currentFloor, currentFloor - 1);
-            currentFloor--;
+            for (int i = currentFloor; i >= 0; i--) {
+                if (toEnter[i] != 0 || toExit[i] != 0) {
+                    notifyAll();
+                    return false;
+                }
+            }
         }
-        if (currentFloor % (nbrOfFloors - 1) == 0) {
-            goingUp = !goingUp;
-        }
+        notifyAll();
+        return true;
+    }
+
+    public synchronized void updateVars(int floor) {
+        currentFloor = floor;
     }
 
     public synchronized void waitForPassengers() throws InterruptedException {
         lift.showDebugInfo(toEnter, toExit);
-        while (toEnter[currentFloor] > 0 && passengersInLift != maxPassengers || toExit[currentFloor] > 0) {
+        while ((toEnter[currentFloor] > 0 && passengersInLift != maxPassengers) || (toExit[currentFloor] > 0)
+                || currentlyMoving != 0) {
             wait();
         }
     }
 
-    public synchronized void waitAndEnter(Passenger pass) throws InterruptedException {
-        while (pass.getStartFloor() != currentFloor || doorsClosed || passengersInLift == maxPassengers) {
-            wait();
-        }
-        toEnter[currentFloor]--;
-        toExit[pass.getDestinationFloor()]++;
-        passengersInLift++;
-        pass.enterLift();
-        notifyAll();
-    }
-
-    public synchronized void waitAndExit(Passenger pass) throws InterruptedException {
-        while (pass.getDestinationFloor() != currentFloor || doorsClosed) {
-            wait();
-        }
-        toExit[currentFloor]--;
-        passengersInLift--;
-        pass.exitLift();
-        notifyAll();
-    }
-
-    public synchronized void openDoors() {
-        if ((toEnter[currentFloor] > 0 && passengersInLift != maxPassengers) || (toExit[currentFloor] > 0)) {
+    public synchronized void openDoors() throws InterruptedException {
+        if (toEnter[currentFloor] > 0 && passengersInLift != maxPassengers || toExit[currentFloor] > 0) {
             doorsClosed = false;
             lift.openDoors(currentFloor);
             notifyAll();
@@ -82,6 +89,30 @@ class Monitor {
             doorsClosed = true;
         }
     }
+
+    public synchronized void waitAndEnter(Passenger pass) throws InterruptedException {
+        while (pass.getStartFloor() != currentFloor || doorsClosed || passengersInLift == maxPassengers) {
+            wait();
+        }
+        currentlyMoving++;
+        toEnter[currentFloor]--;
+        toExit[pass.getDestinationFloor()]++;
+        passengersInLift++;
+    }
+
+    public synchronized void waitAndExit(Passenger pass) throws InterruptedException {
+        while (pass.getDestinationFloor() != currentFloor || doorsClosed) {
+            wait();
+        }
+        currentlyMoving++;
+        toExit[currentFloor]--;
+        passengersInLift--;
+    }
+
+    public synchronized void note() {
+        currentlyMoving--;
+        notifyAll();
+    }
 }
 
 public class Main {
@@ -89,6 +120,10 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
 
         final int nbrOfFloors = 7, maxPassengers = 4, totalPassengers = 20;
+
+        for (int i = 0; i < 10; i++) {
+            System.out.println("");
+        }
 
         LiftView view = new LiftView(nbrOfFloors, maxPassengers);
         Monitor mon = new Monitor(nbrOfFloors, maxPassengers, view);
@@ -99,7 +134,7 @@ public class Main {
             passThread.start();
         }
 
-        LiftThread lift = new LiftThread(view, mon, nbrOfFloors);
+        LiftThread lift = new LiftThread(mon, view, nbrOfFloors);
         lift.start();
 
     }

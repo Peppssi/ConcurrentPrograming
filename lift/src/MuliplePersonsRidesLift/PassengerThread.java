@@ -6,11 +6,12 @@ public class PassengerThread extends Thread {
 
     Monitor mon;
     Passenger pass;
+    boolean firstTime;
 
     public PassengerThread(Monitor mon, Passenger pass) {
         this.mon = mon;
         this.pass = pass;
-        mon.addToArrays(pass.getStartFloor(), pass.getDestinationFloor());
+        firstTime = true;
 
     }
 
@@ -19,8 +20,18 @@ public class PassengerThread extends Thread {
         try {
 
             pass.begin();
+            if (firstTime) {
+                mon.addToEnter(pass.getStartFloor());
+                firstTime = false;
+            }
             mon.waitAndEnter(pass);
+            pass.enterLift();
+            mon.note();
+
             mon.waitAndExit(pass);
+            pass.exitLift();
+            mon.note();
+            
             pass.end();
 
         } catch (InterruptedException e) {

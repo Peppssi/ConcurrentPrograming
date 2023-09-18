@@ -6,15 +6,36 @@ public class LiftThread extends Thread {
 
     Monitor mon;
     LiftView lift;
-    int currentFloor, nextFloor, nbrOfFloors;
-    String direction;
+    private boolean goingUp;
+    private int currentFloor, nbrOfFloors;
 
-    public LiftThread(LiftView lift, Monitor mon, int nbrOfFloors) {
+    public LiftThread(Monitor mon, LiftView lift, int nbrOfFloors) {
         this.mon = mon;
         this.lift = lift;
         this.nbrOfFloors = nbrOfFloors;
+        goingUp = true;
         currentFloor = 0;
-        direction = "UP";
+    }
+
+    public void move() throws InterruptedException {
+        if (mon.checkArrays()) {
+            return;
+        }
+
+        if (goingUp) {
+            lift.moveLift(currentFloor, currentFloor + 1);
+            currentFloor++;
+            mon.updateVars(currentFloor);
+        } else {
+            lift.moveLift(currentFloor, currentFloor - 1);
+            currentFloor--;
+            mon.updateVars(currentFloor);
+        }
+        if (currentFloor % (nbrOfFloors - 1) == 0) {
+            goingUp = !goingUp;
+        }
+
+        mon.openDoors();
     }
 
     @Override
@@ -22,10 +43,9 @@ public class LiftThread extends Thread {
         try {
             while (true) {
 
-                mon.openDoors();
                 mon.waitForPassengers();
                 mon.closeDoors();
-                mon.move();
+                move();
 
             }
         } catch (InterruptedException e) {

@@ -121,10 +121,6 @@ public class Main {
 
         final int nbrOfFloors = 7, maxPassengers = 4, totalPassengers = 20;
 
-        for (int i = 0; i < 10; i++) {
-            System.out.println("");
-        }
-
         LiftView view = new LiftView(nbrOfFloors, maxPassengers);
         Monitor mon = new Monitor(nbrOfFloors, maxPassengers, view);
 

@@ -126,7 +126,7 @@ public class Main {
 
         for (int i = 0; i < totalPassengers; i++) {
             Passenger pass = view.createPassenger();
-            PassengerThread passThread = new PassengerThread(mon, pass);
+            PassengerThread passThread = new PassengerThread(mon, pass, view);
             passThread.start();
         }
 

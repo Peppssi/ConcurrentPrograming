@@ -1,15 +1,18 @@
 package MuliplePersonsRidesLift;
 
+import lift.LiftView;
 import lift.Passenger;
 
 public class PassengerThread extends Thread {
 
     Monitor mon;
     Passenger pass;
+    LiftView view;
 
-    public PassengerThread(Monitor mon, Passenger pass) {
+    public PassengerThread(Monitor mon, Passenger pass, LiftView view) {
         this.mon = mon;
         this.pass = pass;
+        this.view = view;
 
     }
 
@@ -27,8 +30,11 @@ public class PassengerThread extends Thread {
             mon.waitAndExit(pass);
             pass.exitLift();
             mon.note();
-            
+
             pass.end();
+            Passenger pass = view.createPassenger();
+            PassengerThread passThread = new PassengerThread(mon, pass, view);
+            passThread.start();
 
         } catch (InterruptedException e) {
             e.printStackTrace();

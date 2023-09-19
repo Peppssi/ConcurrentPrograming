@@ -1,13 +1,15 @@
 package MuliplePersonsRidesLift;
 
+import java.util.ArrayList;
+
 import lift.LiftView;
 import lift.Passenger;
 
 class Monitor {
+    private ArrayList<Passenger> passList;
     private int[] toEnter; // number of passengers waiting to enter the lift at each floor
     private int[] toExit; // number of passengers (in lift) waiting to exit at each floor
-    private int currentlyMoving;
-    private int nbrOfFloors, maxPassengers, currentFloor, passengersInLift;
+    private int nbrOfFloors, maxPassengers, currentFloor, passengersInLift, currentlyMoving;
     private boolean goingUp;
     private boolean doorsClosed;
     LiftView lift;
@@ -23,11 +25,16 @@ class Monitor {
         lift = view;
         toEnter = new int[nbrOfFloors];
         toExit = new int[nbrOfFloors];
+        passList = new ArrayList<Passenger>();
     }
 
     public synchronized void addToEnter(int floorNbrEnter) {
         toEnter[floorNbrEnter]++;
         notifyAll();
+    }
+
+    public synchronized void addToPassList(Passenger pass){
+        passList.add(pass);
     }
 
     private synchronized boolean isEmpty(int[] array) {
@@ -63,11 +70,12 @@ class Monitor {
         return true;
     }
 
-    public synchronized void updateVars(int floor) {
-        currentFloor = floor;
+    public synchronized void updateVars(int currFloor) {
+        currentFloor = currFloor;
     }
 
     public synchronized void waitForPassengers() throws InterruptedException {
+        openDoors();
         lift.showDebugInfo(toEnter, toExit);
         while ((toEnter[currentFloor] > 0 && passengersInLift != maxPassengers) || (toExit[currentFloor] > 0)
                 || currentlyMoving != 0) {
@@ -119,7 +127,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
-        final int nbrOfFloors = 7, maxPassengers = 4, totalPassengers = 20;
+        final int nbrOfFloors = 10, maxPassengers = 4, totalPassengers = 20;
 
         LiftView view = new LiftView(nbrOfFloors, maxPassengers);
         Monitor mon = new Monitor(nbrOfFloors, maxPassengers, view);

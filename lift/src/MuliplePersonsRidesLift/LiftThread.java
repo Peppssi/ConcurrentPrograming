@@ -34,8 +34,6 @@ public class LiftThread extends Thread {
         if (currentFloor % (nbrOfFloors - 1) == 0) {
             goingUp = !goingUp;
         }
-
-        mon.openDoors();
     }
 
     @Override

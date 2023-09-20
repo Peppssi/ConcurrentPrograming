@@ -34,9 +34,9 @@ public class PassengerThread extends Thread {
 
             pass.end();
 
-            // Passenger pass = view.createPassenger();
-            // PassengerThread passThread = new PassengerThread(mon, pass, view);
-            // passThread.start();
+            Passenger pass = view.createPassenger();
+            PassengerThread passThread = new PassengerThread(mon, pass, view);
+            passThread.start();
 
         } catch (InterruptedException e) {
             e.printStackTrace();

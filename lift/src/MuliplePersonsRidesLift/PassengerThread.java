@@ -18,13 +18,13 @@ public class PassengerThread extends Thread {
 
     @Override
     public void run() {
-        mon.addToPassList(pass);
         try {
 
             pass.begin();
             mon.addToEnter(pass.getStartFloor());
 
             mon.waitAndEnter(pass);
+            
             pass.enterLift();
             mon.note();
 
@@ -34,9 +34,9 @@ public class PassengerThread extends Thread {
 
             pass.end();
 
-            Passenger pass = view.createPassenger();
-            PassengerThread passThread = new PassengerThread(mon, pass, view);
-            passThread.start();
+            // Passenger pass = view.createPassenger();
+            // PassengerThread passThread = new PassengerThread(mon, pass, view);
+            // passThread.start();
 
         } catch (InterruptedException e) {
             e.printStackTrace();

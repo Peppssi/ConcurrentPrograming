@@ -1,12 +1,9 @@
 package MuliplePersonsRidesLift;
 
-import java.util.ArrayList;
-
 import lift.LiftView;
 import lift.Passenger;
 
 class Monitor {
-    private ArrayList<Passenger> passList;
     private int[] toEnter; // number of passengers waiting to enter the lift at each floor
     private int[] toExit; // number of passengers (in lift) waiting to exit at each floor
     private int nbrOfFloors, maxPassengers, currentFloor, passengersInLift, currentlyMoving;
@@ -25,16 +22,11 @@ class Monitor {
         lift = view;
         toEnter = new int[nbrOfFloors];
         toExit = new int[nbrOfFloors];
-        passList = new ArrayList<Passenger>();
     }
 
     public synchronized void addToEnter(int floorNbrEnter) {
         toEnter[floorNbrEnter]++;
         notifyAll();
-    }
-
-    public synchronized void addToPassList(Passenger pass){
-        passList.add(pass);
     }
 
     private synchronized boolean isEmpty(int[] array) {

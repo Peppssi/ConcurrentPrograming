@@ -4,8 +4,8 @@ import lift.LiftView;
 
 public class LiftThread extends Thread {
 
-    Monitor mon;
-    LiftView lift;
+    private Monitor mon;
+    private LiftView lift;
     private boolean goingUp;
     private int currentFloor, nbrOfFloors;
 

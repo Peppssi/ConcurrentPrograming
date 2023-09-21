@@ -8,7 +8,7 @@ class Monitor {
     private int[] toExit; // number of passengers (in lift) waiting to exit at each floor
     private int nbrOfFloors, maxPassengers, currentFloor, passengersInLift, currentlyMoving;
     private boolean goingUp;
-    private boolean doorsClosed;
+    public boolean doorsClosed;
     LiftView lift;
 
     public Monitor(int nbrOfFloors, int maxPassengers, LiftView view) {

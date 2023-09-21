@@ -40,7 +40,7 @@ public class LiftThread extends Thread {
     public void run() {
         try {
             while (true) {
-
+                
                 mon.waitForPassengers();
                 mon.closeDoors();
                 move();

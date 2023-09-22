@@ -18,28 +18,28 @@ public class PassengerThread extends Thread {
 
     @Override
     public void run() {
-        try {
+        while (true) {
+            try {
 
-            pass.begin();
-            mon.addToEnter(pass.getStartFloor());
+                pass.begin();
+                mon.addToEnter(pass.getStartFloor());
 
-            mon.waitAndEnter(pass);
-            
-            pass.enterLift();
-            mon.note();
+                mon.waitAndEnter(pass);
 
-            mon.waitAndExit(pass);
-            pass.exitLift();
-            mon.note();
+                pass.enterLift();
+                mon.note();
 
-            pass.end();
+                mon.waitAndExit(pass);
+                pass.exitLift();
+                mon.note();
 
-            // Passenger pass = view.createPassenger();
-            // PassengerThread passThread = new PassengerThread(mon, pass, view);
-            // passThread.start();
+                pass.end();
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+                pass = view.createPassenger();
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

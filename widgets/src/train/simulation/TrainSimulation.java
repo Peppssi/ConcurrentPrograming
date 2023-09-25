@@ -43,14 +43,13 @@ class Train extends Thread {
     public Train(Route route, Monitor mon) {
         this.route = route;
         this.mon = mon;
-        trainLength = 3;
+        trainLength = 5;
     }
 
     @Override
     public void run() {
+        ArrayList<Segment> q = new ArrayList<>();
         try {
-
-            ArrayList<Segment> q = new ArrayList<>();
 
             for (int i = 0; i < trainLength; i++) {
                 Segment s = route.next();
@@ -65,8 +64,16 @@ class Train extends Thread {
                 mon.removeStep(q.remove(0));
             }
         } catch (InterruptedException e) {
-            System.out.println("FEL");
-            e.printStackTrace();
+            
+            for (int i = 0; i < trainLength; i++){
+                try {
+                    mon.removeStep(q.get(i));
+                } catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            }
+            System.out.println("Thread interrupted and train removed from track.");
         }
     }
 }
@@ -75,7 +82,7 @@ public class TrainSimulation {
 
     public static void main(String[] args) throws InterruptedException {
 
-        int nbr_of_trains = 1;
+        int nbr_of_trains = 10;
 
         TrainView view = new TrainView();
 

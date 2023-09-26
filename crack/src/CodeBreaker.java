@@ -129,7 +129,8 @@ public class CodeBreaker implements SnifferCallback {
                 
                 };
 
-                pool.execute(task);
+                FutureTask<?> future = new FutureTask<>(task);
+                pool.execute(future);
 
             });
             workList.add(w);

@@ -116,9 +116,6 @@ public class CodeBreaker implements SnifferCallback {
                             int progress = p.getProgressBar().getValue();
                             p.getProgressBar().setValue(1000000);
                             mainProgressBar.setValue(mainProgressBar.getValue() + (1000000-progress));
-
-                            //p.getProgressBar().setValue(p.getProgressBar().getMaximum());
-
                             p.getTextArea().setText("Task was canceled!");
                             p.remove(cancelButton);
                             p.add(removeButton);

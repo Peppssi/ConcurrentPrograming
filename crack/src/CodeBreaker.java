@@ -110,8 +110,7 @@ public class CodeBreaker implements SnifferCallback {
                     });
                     p.add(cancelButton);
                     cancelButton.addActionListener(e3 -> {
-                        boolean returnValue = f.cancel(true);
-                        System.out.println(returnValue);
+                        f.cancel(true);
 
                         SwingUtilities.invokeLater(() -> {
                             int progress = p.getProgressBar().getValue();

@@ -93,8 +93,6 @@ public class CodeBreaker implements SnifferCallback {
                             String s = Factorizer.crack(message, n, tracker);
                             SwingUtilities.invokeLater(() -> {
                                 p.getTextArea().setText(s);
-                            });
-                            SwingUtilities.invokeLater(() -> {
                                 p.add(removeButton);
                                 p.remove(cancelButton);
                                 removeButton.addActionListener(e2 -> {
@@ -120,9 +118,9 @@ public class CodeBreaker implements SnifferCallback {
                             p.remove(cancelButton);
                             p.add(removeButton);
                             removeButton.addActionListener(e2 -> {
-                                progressList.remove(p);
-                                mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
-                                mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
+                                    progressList.remove(p);
+                                    mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
+                                    mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
                             });
                         });
                     });

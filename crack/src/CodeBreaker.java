@@ -1,9 +1,7 @@
-import java.lang.reflect.Executable;
 import java.math.BigInteger;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -49,8 +47,8 @@ public class CodeBreaker implements SnifferCallback {
 
         @Override
         public void onProgress(int ppmDelta) {
-            totalProgress += ppmDelta;
             SwingUtilities.invokeLater(() -> {
+                totalProgress += ppmDelta;
                 progressItem.getProgressBar().setValue(totalProgress);
                 mainProgressBar.setValue(mainProgressBar.getValue() + ppmDelta);
             });
@@ -61,13 +59,6 @@ public class CodeBreaker implements SnifferCallback {
     // -----------------------------------------------------------------------
 
     public static void main(String[] args) {
-
-        /*
-         * Most Swing operations (such as creating view elements) must be performed in
-         * the Swing EDT (Event Dispatch Thread).
-         * 
-         * That's what SwingUtilities.invokeLater is for.
-         */
 
         SwingUtilities.invokeLater(() -> {
             CodeBreaker codeBreaker = new CodeBreaker();
@@ -86,6 +77,7 @@ public class CodeBreaker implements SnifferCallback {
         SwingUtilities.invokeLater(() -> {
             WorklistItem w = new WorklistItem(n, message);
             JButton breakButton = new JButton("break");
+            JButton removeButton = new JButton("remove");
             w.add(breakButton);
 
             breakButton.addActionListener(e -> {
@@ -95,42 +87,50 @@ public class CodeBreaker implements SnifferCallback {
                     progressList.add(p);
                     workList.remove(w);
                     mainProgressBar.setMaximum(mainProgressBar.getMaximum() + 1000000);
+                    Future<?> f = pool.submit(() -> {
+                        try {
+                            ProgressTracker tracker = new Tracker(p, mainProgressBar);
+                            String s = Factorizer.crack(message, n, tracker);
+                            SwingUtilities.invokeLater(() -> {
+                                p.getTextArea().setText(s);
+                            });
+                            SwingUtilities.invokeLater(() -> {
+                                p.add(removeButton);
+                                p.remove(cancelButton);
+                                removeButton.addActionListener(e2 -> {
+                                    progressList.remove(p);
+                                    mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
+                                    mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
+                                });
+                            });
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+
+                    });
                     p.add(cancelButton);
                     cancelButton.addActionListener(e3 -> {
+                        boolean returnValue = f.cancel(true);
+                        System.out.println(returnValue);
+
                         SwingUtilities.invokeLater(() -> {
+                            int progress = p.getProgressBar().getValue();
+                            p.getProgressBar().setValue(1000000);
+                            mainProgressBar.setValue(mainProgressBar.getValue() + (1000000-progress));
+
+                            //p.getProgressBar().setValue(p.getProgressBar().getMaximum());
+
                             p.getTextArea().setText("Task was canceled!");
-                            //task.cancel();
-
-                        });
-                    });
-                });
-
-                Runnable task = () -> {
-                    try {
-                        ProgressTracker tracker = new Tracker(p, mainProgressBar);
-                        String s = Factorizer.crack(message, n, tracker);
-                        SwingUtilities.invokeLater(() -> {
-                            p.getTextArea().setText(s);
-                        });
-                        SwingUtilities.invokeLater(() -> {
-                            JButton removeButton = new JButton("remove");
-                            p.add(removeButton);
                             p.remove(cancelButton);
+                            p.add(removeButton);
                             removeButton.addActionListener(e2 -> {
                                 progressList.remove(p);
                                 mainProgressBar.setValue(mainProgressBar.getValue() - 1000000);
                                 mainProgressBar.setMaximum(mainProgressBar.getMaximum() - 1000000);
                             });
                         });
-                    } catch (InterruptedException e1) {
-                        System.out.println("FEL, antagligen factorize som något hände i.");
-                        e1.printStackTrace();
-                    }
-                
-                };
-
-                FutureTask<?> future = new FutureTask<>(task);
-                pool.execute(future);
+                    });
+                });
 
             });
             workList.add(w);

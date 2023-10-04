@@ -14,14 +14,14 @@ import static wash.control.WashingMessage.Order.*;
  * 
  * It can be used after an emergency stop (program 0) or a power failure.
  */
-public class WashingProgram3 extends ActorThread<WashingMessage> {
+public class WashingProgram1 extends ActorThread<WashingMessage> {
 
     private WashingIO io;
     private ActorThread<WashingMessage> temp;
     private ActorThread<WashingMessage> water;
     private ActorThread<WashingMessage> spin;
 
-    public WashingProgram3(WashingIO io,
+    public WashingProgram1(WashingIO io,
             ActorThread<WashingMessage> temp,
             ActorThread<WashingMessage> water,
             ActorThread<WashingMessage> spin) {
@@ -34,41 +34,61 @@ public class WashingProgram3 extends ActorThread<WashingMessage> {
     @Override
     public void run() {
         try {
-            System.out.println("washing program 3 started");
+            io.lock(true);
 
-            // Switch off heating
-            temp.send(new WashingMessage(this, TEMP_IDLE));
+            water.send(new WashingMessage(this, WATER_FILL));
+            receive();
 
-            // Wait for temperature controller to acknowledge
-            WashingMessage ack1 = receive();
-            System.out.println("got " + ack1);
+            temp.send(new WashingMessage(this, TEMP_SET_40));
+            receive();
 
-            // Drain barrel, which may take some time. To ensure the barrel
-            // is drained before we continue, an acknowledgment is required.
-            water.send(new WashingMessage(this, WATER_DRAIN));
-            WashingMessage ack2 = receive(); // wait for acknowledgment
-            System.out.println("got " + ack2);
+            spin.send(new WashingMessage(this, SPIN_SLOW));
+            receive();
 
-            // Now that the barrel is drained, we can turn off water regulation.
-            // For the WATER_IDLE order, we assume the water level regulator to
-            // NOT send any acknowledgment. (Note: in your solution, you
-            // are free to introduce an acknowledgment here if you wish.)
-            water.send(new WashingMessage(this, WATER_IDLE));
+            Thread.sleep(30 * 60000 / Settings.SPEEDUP);
 
-            // Switch off spin. We expect an acknowledgment, to ensure
-            // the hatch isn't opened while the barrel is spinning.
             spin.send(new WashingMessage(this, SPIN_OFF));
-            WashingMessage ack3 = receive(); // wait for acknowledgment
-            System.out.println("got " + ack3);
+            receive();
 
-            // Unlock hatch
+            temp.send(new WashingMessage(this, TEMP_IDLE));
+            receive();
+
+            water.send(new WashingMessage(this, WATER_DRAIN));
+            receive();
+            water.send(new WashingMessage(this, WATER_IDLE));
+            receive();
+
+            for (int i = 0; i < 5; i++){
+                water.send(new WashingMessage(this, WATER_FILL));
+                receive();
+
+                spin.send(new WashingMessage(this, SPIN_SLOW));
+                receive();
+
+                Thread.sleep(2 * 60000 / Settings.SPEEDUP);
+
+                water.send(new WashingMessage(this, WATER_DRAIN));
+                receive();
+                water.send(new WashingMessage(this, WATER_IDLE));
+                receive();
+            }
+
+            water.send(new WashingMessage(this, WATER_DRAIN));
+            receive();
+            spin.send(new WashingMessage(this, SPIN_FAST));
+            receive();
+
+            Thread.sleep(5 * 60000 / Settings.SPEEDUP);
+
+            spin.send(new WashingMessage(this, SPIN_OFF));
+            receive();
+            water.send(new WashingMessage(this, WATER_DRAIN));
+            receive();
+            water.send(new WashingMessage(this, WATER_IDLE));
+            receive();
+
             io.lock(false);
-
-            System.out.println("washing program 3 finished");
         } catch (InterruptedException e) {
-
-            // If we end up here, it means the program was interrupt()'ed:
-            // set all controllers to idle
 
             try {
                 temp.send(new WashingMessage(this, TEMP_IDLE));

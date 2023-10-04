@@ -10,6 +10,8 @@ public class Wash {
 
         WashingIO io = sim.startSimulation();
 
+        Thread currentProgram = null;
+
         TemperatureController temp = new TemperatureController(io);
         WaterController water = new WaterController(io);
         SpinController spin = new SpinController(io);
@@ -22,9 +24,29 @@ public class Wash {
             int n = io.awaitButton();
             System.out.println("user selected program " + n);
 
-            // TODO:
-            // if the user presses buttons 1-3, start a washing program
-            // if the user presses button 0, and a program has been started, stop it
+            switch (n) {
+                case 0:
+                    currentProgram.interrupt();
+                    break;
+                case 1:
+                    WashingProgram1 p1 = new WashingProgram1(io, temp, water, spin);
+                    p1.start();
+                    currentProgram = p1;
+                    break;
+                case 2:
+                WashingProgram2 p2 = new WashingProgram2(io, temp, water, spin);
+                    p2.start();
+                    currentProgram = p2;
+                    break;
+                case 3:
+                    WashingProgram3 p3 = new WashingProgram3(io, temp, water, spin);
+                    p3.start();
+                    currentProgram = p3;
+                    break;
+                default:
+                    // code block
+            }
+
         }
     }
 };

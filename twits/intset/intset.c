@@ -84,6 +84,8 @@ find(struct intset *s, int a)
 bool
 intset_add(struct intset *s, int a)
 {
+
+  pthread_mutex_lock(&s -> lock);
   // rehash if more than 70% is used
   if (s->size >= s->allocated * 7 / 10) {
     int old_allocated = s->allocated;
@@ -115,12 +117,13 @@ intset_add(struct intset *s, int a)
 
   int idx = find(s, a);
   if (s->data[idx] == a) {
+    pthread_mutex_unlock(&s -> lock);
     return false;
   }
 
   s->data[idx] = a;
   s->size++;
-
+  pthread_mutex_unlock(&s -> lock);
   return true;
 }
 

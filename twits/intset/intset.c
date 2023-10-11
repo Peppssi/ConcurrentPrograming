@@ -11,12 +11,10 @@
  */
 
 struct intset {
-
-  pthread_mutex_t lock;
-
   int size;
   int allocated;
   int *data;
+  pthread_mutex_t lock;
 };
 
 // special value indicating a free array element
@@ -123,6 +121,7 @@ intset_add(struct intset *s, int a)
 
   s->data[idx] = a;
   s->size++;
+
   pthread_mutex_unlock(&s -> lock);
   return true;
 }
@@ -132,10 +131,12 @@ intset_add(struct intset *s, int a)
 bool
 intset_contains(struct intset *s, int a)
 {
+  pthread_mutex_lock(&s -> lock);
   // use private helper function above
   int idx = find(s, a);
   bool found = (s->data[idx] == a);
 
+  pthread_mutex_unlock(&s -> lock);
   return found;
 }
 
@@ -144,7 +145,9 @@ intset_contains(struct intset *s, int a)
 int
 intset_size(struct intset *s)
 {
+  pthread_mutex_lock(&s -> lock);
   int sz = s->size;
-
+  
+  pthread_mutex_unlock(&s -> lock);
   return sz;
 }

@@ -11,6 +11,9 @@
  */
 
 struct intset {
+
+  pthread_mutex_t lock;
+
   int size;
   int allocated;
   int *data;
@@ -24,7 +27,9 @@ struct intset {
 struct intset *
 intset_create()
 {
+
   struct intset *s = malloc(sizeof(struct intset));
+  pthread_mutex_init(&s -> lock, NULL);
 
   // if memory allocation fails, terminate with an error
   if(s == NULL) {
@@ -48,6 +53,7 @@ intset_create()
 static int
 index(struct intset *s, int a)
 {
+  
   return abs(a % s->allocated);
 }
 
